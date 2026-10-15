@@ -1,0 +1,23 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+server/.env
+
+# Node dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Python virtual environment
+ai/.venv/
+
+# Build artifacts
+dist/
+build/
+client/dist/
+
+# Server uploads
+server/uploads/*
+!server/uploads/.gitkeep
+

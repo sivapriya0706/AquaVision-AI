@@ -1,15 +1,15 @@
+import { API_BASE_URL } from "../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar({ title, onOpenNotifications, onSelectTab }) {
-  const { user, role, logout, loginWithRole } = useAuth();
+  const { user, role, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(2);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:5000/api/notifications?userId=${user.id}`)
+      fetch(`${API_BASE_URL}/api/notifications?userId=${user.id}`)
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) {
@@ -35,56 +35,12 @@ export default function Navbar({ title, onOpenNotifications, onSelectTab }) {
       </div>
 
       <div className="navbar-right">
-        {/* Role Switcher Pill */}
+        {/* Active Role Indicator Badge */}
         <div className="role-switch-container">
-          <button
-            type="button"
-            className="demo-switch-btn"
-            onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-            title="Switch demo role"
-          >
-            <span className="switch-icon">⚡</span>
+          <div className="demo-switch-btn" style={{ cursor: "default" }}>
+            <span className="switch-icon">💧</span>
             <span>{roleDisplay}</span>
-          </button>
-
-          {showRoleSwitcher && (
-            <div className="role-dropdown-menu">
-              <div className="dropdown-header">Switch Demo Role</div>
-              <button
-                type="button"
-                className={`dropdown-item ${role === "customer" ? "active" : ""}`}
-                onClick={() => {
-                  loginWithRole("customer");
-                  setShowRoleSwitcher(false);
-                }}
-              >
-                <span>👤 Customer (Sivapriya)</span>
-                {role === "customer" && <span>✓</span>}
-              </button>
-              <button
-                type="button"
-                className={`dropdown-item ${role === "partner" ? "active" : ""}`}
-                onClick={() => {
-                  loginWithRole("partner");
-                  setShowRoleSwitcher(false);
-                }}
-              >
-                <span>🛵 Delivery Partner (Arun)</span>
-                {role === "partner" && <span>✓</span>}
-              </button>
-              <button
-                type="button"
-                className={`dropdown-item ${role === "admin" ? "active" : ""}`}
-                onClick={() => {
-                  loginWithRole("admin");
-                  setShowRoleSwitcher(false);
-                }}
-              >
-                <span>🛡️ Admin (AquaVision Admin)</span>
-                {role === "admin" && <span>✓</span>}
-              </button>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Notifications Icon */}

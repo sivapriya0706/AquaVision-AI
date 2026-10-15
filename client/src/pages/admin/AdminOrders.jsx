@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
 
@@ -10,7 +11,7 @@ export default function AdminOrders() {
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
 
   const loadData = () => {
-    fetch("http://localhost:5000/api/orders")
+    fetch(`${API_BASE_URL}/api/orders`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -19,7 +20,7 @@ export default function AdminOrders() {
       })
       .catch(() => {});
 
-    fetch("http://localhost:5000/api/users?role=partner")
+    fetch(`${API_BASE_URL}/api/users?role=partner`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -43,7 +44,7 @@ export default function AdminOrders() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/orders/${selectedOrderForAssign.orderId}/assign`,
+        `${API_BASE_URL}/api/orders/${selectedOrderForAssign.orderId}/assign`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -7,7 +8,7 @@ export default function CustomerNotifications() {
   const [loading, setLoading] = useState(true);
 
   const loadNotifications = () => {
-    fetch(`http://localhost:5000/api/notifications?userId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/notifications?userId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -24,7 +25,7 @@ export default function CustomerNotifications() {
 
   const markAsRead = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: "PATCH",
       });
       setNotifications((prev) =>

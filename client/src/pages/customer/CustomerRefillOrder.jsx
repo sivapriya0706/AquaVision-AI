@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -27,7 +28,7 @@ export default function CustomerRefillOrder({ onNavigate }) {
     setErrorMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/orders", {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

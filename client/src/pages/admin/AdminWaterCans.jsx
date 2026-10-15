@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
 
@@ -16,7 +17,7 @@ export default function AdminWaterCans() {
   const [condition, setCondition] = useState("Good");
 
   const loadCans = () => {
-    fetch("http://localhost:5000/api/cans")
+    fetch(`${API_BASE_URL}/api/cans`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -34,7 +35,7 @@ export default function AdminWaterCans() {
   const handleAddCan = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/cans", {
+      const res = await fetch(`${API_BASE_URL}/api/cans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -57,7 +58,7 @@ export default function AdminWaterCans() {
 
   const handleUpdateStatus = async (canId, newStatus, newCondition) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/cans/${canId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/cans/${canId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,28 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+// Automatically attach stored session token to all /api/ requests
+if (typeof window !== "undefined" && !window.__av_fetch_interceptor_installed) {
+  window.__av_fetch_interceptor_installed = true;
+  const originalFetch = window.fetch;
+  window.fetch = function (url, options = {}) {
+    try {
+      const token = localStorage.getItem("aquavision_token");
+      if (token && typeof url === "string" && url.includes("/api/")) {
+        const nextOptions = { ...options };
+        nextOptions.headers = {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+        };
+        return originalFetch(url, nextOptions);
+      }
+    } catch {
+      // Fallback to original fetch if error accessing storage
+    }
+    return originalFetch(url, options);
+  };
+}
+
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";

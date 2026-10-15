@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useEffect, useState } from "react";
 import Modal from "../../components/Modal";
 
@@ -8,7 +9,7 @@ export default function AdminDamageReports() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const loadReports = () => {
-    fetch("http://localhost:5000/api/damage-reports")
+    fetch(`${API_BASE_URL}/api/damage-reports`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setReports(data);
@@ -24,7 +25,7 @@ export default function AdminDamageReports() {
   const updateStatus = async (reportId, status) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/damage-reports/${reportId}/status`,
+        `${API_BASE_URL}/api/damage-reports/${reportId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -108,7 +109,7 @@ export default function AdminDamageReports() {
                         <button
                           type="button"
                           className="btn-outline-sm"
-                          onClick={() => setSelectedPhoto(`http://localhost:5000${report.photo}`)}
+                          onClick={() => setSelectedPhoto(`${API_BASE_URL}${report.photo}`)}
                         >
                           View Photo
                         </button>

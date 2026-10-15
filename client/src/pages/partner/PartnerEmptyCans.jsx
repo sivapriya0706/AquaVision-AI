@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -13,7 +14,7 @@ export default function PartnerEmptyCans() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const loadCollections = () => {
-    fetch("http://localhost:5000/api/deliveries/empty-cans")
+    fetch(`${API_BASE_URL}/api/deliveries/empty-cans`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -34,7 +35,7 @@ export default function PartnerEmptyCans() {
     setSuccessMsg("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/deliveries/collect-empty", {
+      const res = await fetch(`${API_BASE_URL}/api/deliveries/collect-empty`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

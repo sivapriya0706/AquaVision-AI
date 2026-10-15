@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "./config/api";
 import { useEffect, useState } from "react";
 
 function AdminReports() {
@@ -9,7 +10,7 @@ function AdminReports() {
   }, []);
 
   const loadReports = () => {
-    fetch("http://localhost:5000/api/damage-reports")
+    fetch(`${API_BASE_URL}/api/damage-reports`)
       .then((response) => response.json())
       .then((data) => {
         setReports(data);
@@ -23,7 +24,7 @@ function AdminReports() {
   const updateStatus = async (reportId, status) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/damage-reports/${reportId}/status`,
+        `${API_BASE_URL}/api/damage-reports/${reportId}/status`,
         {
           method: "PATCH",
           headers: {
@@ -213,7 +214,7 @@ function AdminReports() {
                   }}
                 >
                   <a
-                    href={`http://localhost:5000${report.photo}`}
+                    href={`${API_BASE_URL}${report.photo}`}
                     target="_blank"
                     rel="noreferrer"
                     style={{

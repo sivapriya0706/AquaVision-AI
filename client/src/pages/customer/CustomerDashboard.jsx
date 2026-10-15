@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -11,7 +12,7 @@ export default function CustomerDashboard({ onNavigate }) {
 
   useEffect(() => {
     // 1. Fetch AI Refill Status
-    fetch("http://localhost:5000/api/refill-status")
+    fetch(`${API_BASE_URL}/api/refill-status`)
       .then((res) => res.json())
       .then((data) => {
         setRefillPrediction(data.prediction || "Refill likely needed soon");
@@ -21,7 +22,7 @@ export default function CustomerDashboard({ onNavigate }) {
       });
 
     // 2. Fetch Orders
-    fetch(`http://localhost:5000/api/orders?customerId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/orders?customerId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -36,7 +37,7 @@ export default function CustomerDashboard({ onNavigate }) {
       .finally(() => setLoading(false));
 
     // 3. Fetch Notifications
-    fetch(`http://localhost:5000/api/notifications?userId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/notifications?userId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

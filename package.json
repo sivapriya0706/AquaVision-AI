@@ -1,0 +1,23 @@
+{
+  "name": "aquavision-ai",
+  "version": "2.0.0",
+  "description": "AquaVision AI - Smart Water Can Distribution & Delivery Platform",
+  "main": "server/server.js",
+  "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "start": "node server/server.js",
+    "server": "npm --prefix server start",
+    "client": "npm --prefix client dev",
+    "test": "npm --prefix server test"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^5.2.1",
+    "mongoose": "^9.11.2",
+    "multer": "^2.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

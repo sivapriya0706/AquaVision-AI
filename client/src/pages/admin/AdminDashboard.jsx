@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 
 export default function AdminDashboard({ onNavigate }) {
@@ -14,7 +15,7 @@ export default function AdminDashboard({ onNavigate }) {
 
   useEffect(() => {
     // Orders
-    fetch("http://localhost:5000/api/orders")
+    fetch(`${API_BASE_URL}/api/orders`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -32,7 +33,7 @@ export default function AdminDashboard({ onNavigate }) {
       .catch(() => {});
 
     // Damage Reports
-    fetch("http://localhost:5000/api/damage-reports")
+    fetch(`${API_BASE_URL}/api/damage-reports`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/api";
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
@@ -48,8 +49,8 @@ export function AuthProvider({ children }) {
         return null;
       }
     }
-    // Default to customer on initial fresh open for seamless demo
-    return DEMO_ACCOUNTS.customer;
+    // Default to unauthenticated: no auto-login without credentials
+    return null;
   });
 
   const [loading, setLoading] = useState(false);
@@ -57,60 +58,73 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (user) {
       localStorage.setItem("aquavision_user", JSON.stringify(user));
+      if (user.token) {
+        localStorage.setItem("aquavision_token", user.token);
+      }
     } else {
       localStorage.removeItem("aquavision_user");
+      localStorage.removeItem("aquavision_token");
     }
   }, [user]);
-
-  const loginWithRole = (role) => {
-    const targetUser = DEMO_ACCOUNTS[role] || DEMO_ACCOUNTS.customer;
-    setUser(targetUser);
-    return targetUser;
-  };
 
   const loginWithCredentials = async (email, password) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (res.ok && data.user) {
-        setUser(data.user);
+      if (res.ok && data.success && data.user) {
+        const fullUser = { ...data.user, token: data.token };
+        setUser(fullUser);
+        localStorage.setItem("aquavision_user", JSON.stringify(fullUser));
+        if (data.token) {
+          localStorage.setItem("aquavision_token", data.token);
+        }
         setLoading(false);
-        return { success: true, user: data.user };
-      }
-      // If server unreachable or error, fallback to demo matching
-      const found = Object.values(DEMO_ACCOUNTS).find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
-      );
-      if (found) {
-        setUser(found);
-        setLoading(false);
-        return { success: true, user: found };
+        return { success: true, user: fullUser };
       }
       setLoading(false);
-      return { success: false, message: data.message || "Invalid credentials" };
+      return { success: false, message: data.message || "Invalid email or password." };
     } catch {
-      // Local fallback
-      const found = Object.values(DEMO_ACCOUNTS).find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
-      );
-      if (found) {
-        setUser(found);
+      setLoading(false);
+      return { success: false, message: "Unable to reach AquaVision server. Please ensure backend is running." };
+    }
+  };
+
+  const registerCustomer = async ({ name, email, password, phone, address }) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, phone, address }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        const fullUser = { ...data.user, token: data.token };
+        setUser(fullUser);
+        localStorage.setItem("aquavision_user", JSON.stringify(fullUser));
+        if (data.token) {
+          localStorage.setItem("aquavision_token", data.token);
+        }
         setLoading(false);
-        return { success: true, user: found };
+        return { success: true, user: fullUser };
       }
       setLoading(false);
-      return { success: false, message: "Server connection failed, use demo 1-click login." };
+      return { success: false, message: data.message || "Registration failed." };
+    } catch {
+      setLoading(false);
+      return { success: false, message: "Unable to reach AquaVision server. Please ensure backend is running." };
     }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("aquavision_user");
+    localStorage.removeItem("aquavision_token");
   };
 
   const updateUserProfile = (updatedFields) => {
@@ -126,8 +140,8 @@ export function AuthProvider({ children }) {
         user,
         role: user ? user.role : null,
         isAuthenticated: !!user,
-        loginWithRole,
         loginWithCredentials,
+        registerCustomer,
         logout,
         updateUserProfile,
         loading,

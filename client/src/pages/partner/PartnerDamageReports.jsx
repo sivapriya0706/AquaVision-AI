@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 
 export default function PartnerDamageReports() {
@@ -5,7 +6,7 @@ export default function PartnerDamageReports() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/damage-reports")
+    fetch(`${API_BASE_URL}/api/damage-reports`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -79,7 +80,7 @@ export default function PartnerDamageReports() {
                     <td>
                       {report.photo ? (
                         <a
-                          href={`http://localhost:5000${report.photo}`}
+                          href={`${API_BASE_URL}${report.photo}`}
                           target="_blank"
                           rel="noreferrer"
                           className="btn-outline-sm"

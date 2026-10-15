@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -8,7 +9,7 @@ export default function CustomerDeliveryStatus({ onNavigate }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/orders?customerId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/orders?customerId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {

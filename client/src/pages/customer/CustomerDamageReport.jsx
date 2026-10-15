@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -13,7 +14,7 @@ export default function CustomerDamageReport() {
   const [loadingReports, setLoadingReports] = useState(true);
 
   const loadMyReports = () => {
-    fetch(`http://localhost:5000/api/damage-reports?customerId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/damage-reports?customerId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -57,7 +58,7 @@ export default function CustomerDamageReport() {
     setReportStatus("Submitting report...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/damage-report", {
+      const response = await fetch(`${API_BASE_URL}/api/damage-report`, {
         method: "POST",
         body: formData,
       });
@@ -255,7 +256,7 @@ export default function CustomerDamageReport() {
 
                     {report.photo && (
                       <a
-                        href={`http://localhost:5000${report.photo}`}
+                        href={`${API_BASE_URL}${report.photo}`}
                         target="_blank"
                         rel="noreferrer"
                         className="btn-outline-sm"

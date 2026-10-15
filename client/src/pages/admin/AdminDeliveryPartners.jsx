@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 
 export default function AdminDeliveryPartners() {
@@ -5,7 +6,7 @@ export default function AdminDeliveryPartners() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/users?role=partner")
+    fetch(`${API_BASE_URL}/api/users?role=partner`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

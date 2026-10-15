@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Modal from "../../components/Modal";
@@ -11,7 +12,7 @@ export default function PartnerDashboard({ onNavigate }) {
   const [updating, setUpdating] = useState(false);
 
   const loadOrders = () => {
-    fetch("http://localhost:5000/api/orders")
+    fetch(`${API_BASE_URL}/api/orders`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -34,7 +35,7 @@ export default function PartnerDashboard({ onNavigate }) {
   const handleUpdateStatus = async (orderId, newStatus, emptyCount = 0) => {
     setUpdating(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -46,7 +47,7 @@ export default function PartnerDashboard({ onNavigate }) {
       if (res.ok) {
         if (newStatus === "Delivered" && emptyCount > 0) {
           const ord = assignedOrders.find((o) => o.orderId === orderId);
-          await fetch("http://localhost:5000/api/deliveries/collect-empty", {
+          await fetch(`${API_BASE_URL}/api/deliveries/collect-empty`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Modal from "../../components/Modal";
@@ -13,7 +14,7 @@ export default function CustomerPayments() {
   const [paymentSuccessMsg, setPaymentSuccessMsg] = useState("");
 
   const loadPayments = () => {
-    fetch(`http://localhost:5000/api/payments?customerId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/payments?customerId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -38,7 +39,7 @@ export default function CustomerPayments() {
     setIsProcessing(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/payments", {
+      const res = await fetch(`${API_BASE_URL}/api/payments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

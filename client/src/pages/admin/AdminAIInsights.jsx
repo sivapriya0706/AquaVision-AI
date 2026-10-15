@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 
 export default function AdminAIInsights() {
@@ -8,9 +9,9 @@ export default function AdminAIInsights() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:5000/api/refill-status").then((r) => r.json()).catch(() => null),
-      fetch("http://localhost:5000/api/demand-forecast").then((r) => r.json()).catch(() => null),
-      fetch("http://localhost:5000/api/payment-insight").then((r) => r.json()).catch(() => null),
+      fetch(`${API_BASE_URL}/api/refill-status`).then((r) => r.json()).catch(() => null),
+      fetch(`${API_BASE_URL}/api/demand-forecast`).then((r) => r.json()).catch(() => null),
+      fetch(`${API_BASE_URL}/api/payment-insight`).then((r) => r.json()).catch(() => null),
     ])
       .then(([r, d, p]) => {
         if (r && r.prediction) {

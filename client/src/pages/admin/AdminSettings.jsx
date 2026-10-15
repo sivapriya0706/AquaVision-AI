@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState } from "react";
 
 export default function AdminSettings() {
@@ -16,7 +17,7 @@ export default function AdminSettings() {
   const handleResetDemoData = async () => {
     if (window.confirm("Reset all demo data (cans, orders, payments, reports) back to initial prototype defaults?")) {
       try {
-        const res = await fetch("http://localhost:5000/api/system/reset-demo", {
+        const res = await fetch(`${API_BASE_URL}/api/system/reset-demo`, {
           method: "POST",
         });
         if (res.ok) {

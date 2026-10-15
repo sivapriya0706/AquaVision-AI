@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../config/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -8,7 +9,7 @@ export default function CustomerWaterCans({ onNavigate }) {
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/cans?customerId=${user?.id || "USR-001"}`)
+    fetch(`${API_BASE_URL}/api/cans?customerId=${user?.id || "USR-001"}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
