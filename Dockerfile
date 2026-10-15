@@ -10,8 +10,10 @@ RUN npm --prefix client run build
 # Production image
 FROM node:20-slim
 
-# Install Python and dependencies for ML models
+# Install CA certificates, curl, and Python for ML models
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
     python3 \
     python3-pip \
     python3-venv \

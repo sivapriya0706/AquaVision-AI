@@ -7,7 +7,7 @@ async function testFallback() {
   // Point to non-existent port
   process.env.MONGODB_URI = "mongodb://127.0.0.1:27019/aquavision";
 
-  const conn = await connectDB();
+  const conn = await connectDB({ serverSelectionTimeoutMS: 2000, connectTimeoutMS: 2000 });
   console.log("isConnected() result:", isConnected());
 
   if (isConnected()) {

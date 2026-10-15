@@ -3,7 +3,7 @@ services:
     name: aquavision-ai
     env: docker
     plan: free
-    region: oregon
+    region: virginia
     dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV

@@ -11,7 +11,7 @@ const multer = require("multer");
 const fs = require("fs");
 const crypto = require("crypto");
 
-const { connectDB } = require("./config/db");
+const { connectDB, getConnectionStatus } = require("./config/db");
 const store = require("./data/store");
 
 const app = express();
@@ -171,40 +171,54 @@ function requireRole(...allowedRoles) {
   };
 }
 
+function requirePersistence(req, res, next) {
+  if (process.env.NODE_ENV === "production" && !store.isDbConnected()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database service is temporarily unavailable. To prevent data loss, write operations are paused until persistent database connectivity is restored.",
+      persistence: "disconnected",
+    });
+  }
+  next();
+}
+
 // ======================================================
-// HOME ROUTE
+// HOME & HEALTH ROUTES
 // ======================================================
 
 app.get("/", (req, res) => {
   const indexHtml = path.resolve(__dirname, "..", "client", "dist", "index.html");
-  const isBrowserHtmlRequest = req.headers.accept && req.headers.accept.includes("text/html") && (!req.headers["content-type"] || !req.headers["content-type"].includes("application/json"));
+  const isBrowserHtmlRequest =
+    req.headers.accept &&
+    req.headers.accept.includes("text/html") &&
+    (!req.headers["content-type"] || !req.headers["content-type"].includes("application/json"));
 
   if (isBrowserHtmlRequest && fs.existsSync(indexHtml)) {
     return res.sendFile(indexHtml);
   }
 
+  const dbStatus = getConnectionStatus();
+  const isHealthy = dbStatus.connected || process.env.NODE_ENV !== "production";
+
   res.json({
     message: "AquaVision AI Backend is running",
     version: "2.0.0",
     roles: ["customer", "partner", "admin"],
-    status: "healthy",
-    database: {
-      type: "MongoDB",
-      status: store.isDbConnected() ? "connected" : "fallback-in-memory",
-    },
+    status: isHealthy ? "healthy" : "degraded",
+    database: dbStatus,
   });
 });
 
 app.get("/api/health", (req, res) => {
+  const dbStatus = getConnectionStatus();
+  const isHealthy = dbStatus.connected || process.env.NODE_ENV !== "production";
+
   res.json({
     message: "AquaVision AI Backend is running",
     version: "2.0.0",
     roles: ["customer", "partner", "admin"],
-    status: "healthy",
-    database: {
-      type: "MongoDB",
-      status: store.isDbConnected() ? "connected" : "fallback-in-memory",
-    },
+    status: isHealthy ? "healthy" : "degraded",
+    database: dbStatus,
   });
 });
 
@@ -254,7 +268,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // POST /api/auth/register & /api/auth/signup — Register a new customer account
-app.post(["/api/auth/register", "/api/auth/signup"], async (req, res) => {
+app.post(["/api/auth/register", "/api/auth/signup"], requirePersistence, async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
@@ -391,7 +405,7 @@ app.get("/api/damage-reports", async (req, res) => {
   }
 });
 
-app.patch("/api/damage-reports/:id/status", requireRole("admin"), async (req, res) => {
+app.patch("/api/damage-reports/:id/status", requireRole("admin"), requirePersistence, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, adminNotes } = req.body;
@@ -436,7 +450,7 @@ app.patch("/api/damage-reports/:id/status", requireRole("admin"), async (req, re
   }
 });
 
-app.post("/api/damage-report", upload.single("damagePhoto"), async (req, res) => {
+app.post("/api/damage-report", upload.single("damagePhoto"), requirePersistence, async (req, res) => {
   try {
     const damageType = req.body.damageType;
     const customerId = req.body.customerId || "USR-001";
@@ -532,7 +546,7 @@ app.get("/api/users/:id", async (req, res) => {
   }
 });
 
-app.put("/api/users/:id", async (req, res) => {
+app.put("/api/users/:id", requirePersistence, async (req, res) => {
   try {
     const user = await store.updateUser(req.params.id, req.body);
     if (!user) {
@@ -568,7 +582,7 @@ app.get("/api/cans", async (req, res) => {
   }
 });
 
-app.post("/api/cans", async (req, res) => {
+app.post("/api/cans", requirePersistence, async (req, res) => {
   try {
     const { customerId, customerName, capacity, status, condition, batch } = req.body;
     const newCan = {
@@ -590,7 +604,7 @@ app.post("/api/cans", async (req, res) => {
   }
 });
 
-app.patch("/api/cans/:id", async (req, res) => {
+app.patch("/api/cans/:id", requirePersistence, async (req, res) => {
   try {
     const updated = await store.updateCanStatus(req.params.id, req.body);
     if (!updated) {
@@ -629,7 +643,7 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-app.post("/api/orders", async (req, res) => {
+app.post("/api/orders", requirePersistence, async (req, res) => {
   try {
     const {
       customerId,
@@ -685,7 +699,7 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-app.patch("/api/orders/:id/status", async (req, res) => {
+app.patch("/api/orders/:id/status", requirePersistence, async (req, res) => {
   try {
     const { status, emptyCansReturned } = req.body;
     const extra = {};
@@ -718,7 +732,7 @@ app.patch("/api/orders/:id/status", async (req, res) => {
   }
 });
 
-app.patch("/api/orders/:id/assign", requireRole("admin"), async (req, res) => {
+app.patch("/api/orders/:id/assign", requireRole("admin"), requirePersistence, async (req, res) => {
   try {
     const { partnerId, partnerName } = req.body;
     const partner = await store.getUserById(partnerId);
@@ -751,7 +765,7 @@ app.patch("/api/orders/:id/assign", requireRole("admin"), async (req, res) => {
 // DELIVERIES & EMPTY CAN COLLECTION
 // ======================================================
 
-app.post("/api/deliveries/collect-empty", requireRole("partner", "admin"), async (req, res) => {
+app.post("/api/deliveries/collect-empty", requireRole("partner", "admin"), requirePersistence, async (req, res) => {
   try {
     const { partnerId, partnerName, customerId, customerName, orderId, quantity, condition } = req.body;
 
@@ -807,7 +821,7 @@ app.get("/api/payments", async (req, res) => {
   }
 });
 
-app.post("/api/payments", async (req, res) => {
+app.post("/api/payments", requirePersistence, async (req, res) => {
   try {
     const { customerId, customerName, orderId, amount, method } = req.body;
 
