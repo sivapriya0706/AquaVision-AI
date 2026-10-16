@@ -14,12 +14,35 @@ function getNormalizedUri() {
   // Trim whitespace, newlines, and surrounding quotes
   uri = uri.trim().replace(/^["']|["']$/g, "").trim();
 
+  // If user pasted with angle brackets around credentials, e.g. <user>:<pass>@...
+  // Automatically sanitize them so the connection string parses properly
+  uri = uri.replace(
+    /^(mongodb(?:\+srv)?:\/\/)(?:<([^:>@]+)>|([^:>@]+)):(?:<([^@>]+)>|([^@>]+))@/i,
+    (m, scheme, u1, u2, p1, p2) => {
+      const user = u1 !== undefined ? u1 : u2;
+      const pass = p1 !== undefined ? p1 : p2;
+      return `${scheme}${user}:${pass}@`;
+    }
+  );
+
   // If SRV URI lacks a database name before query string (e.g. mongodb.net/ or mongodb.net/?), append /aquavision
   if (uri.startsWith("mongodb+srv://")) {
     if (uri.includes(".mongodb.net/?")) {
       uri = uri.replace(".mongodb.net/?", ".mongodb.net/aquavision?");
     } else if (uri.endsWith(".mongodb.net") || uri.endsWith(".mongodb.net/")) {
       uri = uri.replace(/\.mongodb\.net\/?$/, ".mongodb.net/aquavision");
+    }
+
+    // Ensure authSource=admin is specified for Atlas database user authentication
+    if (!uri.includes("authSource=")) {
+      uri += (uri.includes("?") ? "&" : "?") + "authSource=admin";
+    }
+  } else if (uri.startsWith("mongodb://")) {
+    // Ensure database name is included for standard mongodb:// replica sets / standalone
+    if (/:\d+\/\?/.test(uri)) {
+      uri = uri.replace(/:\d+\/\?/, (m) => m.replace("/?", "/aquavision?"));
+    } else if (/:\d+\/?$/.test(uri)) {
+      uri = uri.replace(/:\d+\/?$/, (m) => m.replace(/\/?$/, "/aquavision"));
     }
   }
 
@@ -68,6 +91,16 @@ function validateUriPreflight(uri) {
 
   // Check for unencoded special characters in password (e.g. multiple '@' before the host)
   const afterScheme = uri.split("://")[1] || "";
+  const userinfo = afterScheme.split("@")[0] || "";
+
+  if (userinfo.includes("<") || userinfo.includes(">")) {
+    return {
+      valid: false,
+      error: "MONGODB_URI contains literal '<' or '>' angle brackets in credentials.",
+      hint: "Remove the angle brackets '<' and '>'. For example, if your password is MyPass123, write :MyPass123@ (NOT :<MyPass123>@).",
+    };
+  }
+
   const atCount = (afterScheme.split("?")[0].match(/@/g) || []).length;
   if (atCount > 1) {
     return {
